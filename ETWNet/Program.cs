@@ -4,10 +4,6 @@ using Microsoft.Diagnostics.Tracing.Session;
 using System.Diagnostics;
 
 namespace McETWNet {
-    class pinfo {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
 
     class Program {
         static void Main(string[] args)
