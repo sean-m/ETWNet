@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
 	  <DebugType>embedded</DebugType>
@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.20" />
+    <PackageReference Include="Microsoft.Windows.EventTracing.Network" Version="1.12.10" />
     <PackageReference Include="runtime.any.System.Diagnostics.Tracing" Version="4.3.0" />
   </ItemGroup>
 

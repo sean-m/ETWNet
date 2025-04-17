@@ -19,9 +19,41 @@ namespace McETWNet {
                 return processes.TryGetValue(evt.ProcessID, out var name) ? name : string.Empty;
             }
 
+
             using (var session = new TraceEventSession(Environment.OSVersion.Version.Build >= 9200 ? "MyKernelSession" : KernelTraceEventParser.KernelSessionName))
             {
                 session.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
+
+                // Microsoft-Windows-DNS-Client
+                var dnsGuid = Guid.Parse("1C95126E-7EEA-49A9-A3FE-A378B03DDB4D");
+                session.EnableProvider(dnsGuid, TraceEventLevel.Always);
+
+                var dnsParser = session.Source.Dynamic;
+                dnsParser.All += e =>
+                {
+                    // Query
+                    switch (e.EventName) {
+                        case "EventID(3006)":
+                        case "EventID(3009)":
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write($"{e.TimeStamp.ToString("O")}: DNS ");
+                            Console.WriteLine($"{e.EventName} {e.FormattedMessage}");
+                            break;
+                        case "EventID(3008)":
+                        case "EventID(3020)":
+                            Console.ForegroundColor = ConsoleColor.Blue;
+                            Console.Write($"{e.TimeStamp.ToString("O")}: DNS ");
+                            Console.WriteLine($"{e.EventName} {e.FormattedMessage}");
+                            break;
+                        case "EventID(3018)":
+                            Console.ForegroundColor = ConsoleColor.Magenta;
+                            Console.Write($"{e.TimeStamp.ToString("O")}: DNS ");
+                            Console.WriteLine($"{e.EventName} {e.FormattedMessage} {e.ProcessName}");
+                            break;
+                    }
+                    Console.ResetColor();
+                };
+
                 var parser = session.Source.Kernel;
 
                 Console.WriteLine($"DateTime: Protocol\tEvent\tConnectionID\tLocal > Remote\tPID\tProcessName\tFailureCode\tFailureMsg");
@@ -79,6 +111,11 @@ namespace McETWNet {
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     var name = TryGetProcessName(e);
+                    if (e.dport == 53)
+                    {
+                        //dns
+                        var s = e;
+                    }
                     Console.WriteLine($"{e.TimeStamp.ToString("O")}: UDP\tSend\t\t{e.saddr}:{e.sport} -> {e.daddr}:{e.dport}\t{e.ProcessID}\t{name}");
                 };
 
@@ -103,7 +140,9 @@ namespace McETWNet {
                     Console.WriteLine($"{e.TimeStamp.ToString("O")}: UDPv6\tRecv\t\t{e.daddr}:{e.dport} <- {e.saddr}:{e.sport}\t{e.ProcessID}\t{name}");
                 };
 
-                Task.Run(() => session.Source.Process()).Wait();
+
+                Task.Run(() => session.Source.Process());
+                while (true) { Thread.Sleep(100); }
             }
         }
     }
